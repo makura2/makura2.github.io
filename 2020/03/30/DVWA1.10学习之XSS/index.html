@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DVWA1.10学习之XSS | Pwcx's blog</title><meta name="keywords" content="XSS, DVWA"><meta name="author" content="Pwcx"><meta name="copyright" content="Pwcx"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="参考的学习网站 https:&#x2F;&#x2F;www.freebuf.com&#x2F;articles&#x2F;web&#x2F;123779.html DVWA之XSSxss的概念XSS，全称Cross Site Scripting，即跨站脚本攻击，某种意义上也是一种注入攻击，是指攻击者在页面中注入恶意的脚本代码，当受害者访问该页面时，恶意代码会在其浏览器上执行，需要强调的是，XSS不仅仅限于JavaScript，还包括flash等其">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DVWA1.10学习之XSS">
+<meta property="og:url" content="https://pwcx.github.io/2020/03/30/DVWA1.10%E5%AD%A6%E4%B9%A0%E4%B9%8BXSS/index.html">
+<meta property="og:site_name" content="Pwcx&#39;s blog">
+<meta property="og:description" content="参考的学习网站 https:&#x2F;&#x2F;www.freebuf.com&#x2F;articles&#x2F;web&#x2F;123779.html DVWA之XSSxss的概念XSS，全称Cross Site Scripting，即跨站脚本攻击，某种意义上也是一种注入攻击，是指攻击者在页面中注入恶意的脚本代码，当受害者访问该页面时，恶意代码会在其浏览器上执行，需要强调的是，XSS不仅仅限于JavaScript，还包括flash等其">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
+<meta property="article:published_time" content="2020-03-30T11:40:19.000Z">
+<meta property="article:modified_time" content="2020-04-06T06:14:08.000Z">
+<meta property="article:author" content="Pwcx">
+<meta property="article:tag" content="XSS, DVWA">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://pwcx.github.io/2020/03/30/DVWA1.10%E5%AD%A6%E4%B9%A0%E4%B9%8BXSS/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  hexoversion: '5.2.0',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: 'days',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true,
+  postUpdate: '2020-04-06 14:14:08'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {
+  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }
+})()</script><div class="aplayer" data-id="87200602" data-server="netease" data-type="playlist" data-fixed="true" data-listFolded="false" data-order="random" data-preload="none"></div><link rel="stylesheet" href="https://cdn.bootcss.com/aplayer/1.10.1/APlayer.min.css"><script src="https://cdn.bootcss.com/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/meting@1.2.0/dist/Meting.min.js"></script><meta name="generator" content="Hexo 5.2.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">Loading...</div></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/img/5.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">Articles</div><div class="length_num">67</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">Tags</div><div class="length_num">39</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-feather"></i><span> 留言板</span></a></div></div></div></div><div id="body-wrap"><div id="web_bg"></div><div id="sidebar"><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#DVWA%E4%B9%8BXSS"><span class="toc-number">1.</span> <span class="toc-text">DVWA之XSS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E5%9E%8Bxss"><span class="toc-number">2.</span> <span class="toc-text">反射型xss</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E5%9E%8BXSS"><span class="toc-number">3.</span> <span class="toc-text">存储型XSS</span></a></li></ol></div></div></div><header class="post-bg" id="page-header" style="background-image: url(https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Pwcx's blog</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-feather"></i><span> 留言板</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">DVWA1.10学习之XSS</div></div><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2020-03-30T11:40:19.000Z" title="Created 2020-03-30 19:40:19">2020-03-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2020-04-06T06:14:08.000Z" title="Updated 2020-04-06 14:14:08">2020-04-06</time></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">1.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>7min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><p>参考的学习网站 <a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/web/123779.html">https://www.freebuf.com/articles/web/123779.html</a></p>
+<h3 id="DVWA之XSS"><a href="#DVWA之XSS" class="headerlink" title="DVWA之XSS"></a>DVWA之XSS</h3><p>xss的概念<br>XSS，全称Cross Site Scripting，即跨站脚本攻击，某种意义上也是一种注入攻击，是指攻击者在页面中注入恶意的脚本代码，当受害者访问该页面时，恶意代码会在其浏览器上执行，需要强调的是，XSS不仅仅限于JavaScript，还包括flash等其它脚本语言。根据恶意代码是否存储在服务器中，XSS可以分为存储型的XSS与反射型的XSS。</p>
+<p>DOM型的XSS由于其特殊性，常常被分为第三种，这是一种基于DOM树的XSS。例如服务器端经常使用document.boby.innerHtml等函数动态生成html页面，如果这些函数在引用某些变量时没有进行过滤或检查，就会产生DOM型的XSS。DOM型XSS可能是存储型，也有可能是反射型。</p>
+<h3 id="反射型xss"><a href="#反射型xss" class="headerlink" title="反射型xss"></a>反射型xss</h3><p><strong>1. low</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Is there any input?</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>( array_key_exists( <span class="string">&quot;name&quot;</span>, $_GET ) &amp;&amp; $_GET[ <span class="string">&#x27;name&#x27;</span> ] != <span class="literal">NULL</span> ) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Feedback for end user</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&#x27;&lt;pre&gt;Hello &#x27;</span> . $_GET[ <span class="string">&#x27;name&#x27;</span> ] . <span class="string">&#x27;&lt;/pre&gt;&#x27;</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上述代码直接引用了name参数，没有做任何的过滤与检查，存在明显的xss漏洞</p>
+<p>输入 &lt;script&gt; alert(/xss/) &lt;/script&gt; 就可以进行漏洞利用</p>
+<p><strong>2. Medium</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// Is there any input?</span></span><br><span class="line"><span class="keyword">if</span>( array_key_exists( <span class="string">&quot;name&quot;</span>, $_GET ) &amp;&amp; $_GET[ <span class="string">&#x27;name&#x27;</span> ] != <span class="literal">NULL</span> ) &#123;</span><br><span class="line">    <span class="comment">// Get input</span></span><br><span class="line">    $name = str_replace( <span class="string">&#x27;&lt;script&gt;&#x27;</span>, <span class="string">&#x27;&#x27;</span>, $_GET[ <span class="string">&#x27;name&#x27;</span> ] );</span><br><span class="line">    <span class="comment">// Feedback for end user</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;&lt;pre&gt;Hello $&#123;name&#125;&lt;/pre&gt;&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>array_key_exists 函数的作用是判断数组中是否存在指定的key</p>
+<p>上述代码对输入进行了过滤，使用str_replace函数将输入中的&lt;script&gt;全部替换成’’，但是可以轻松的绕过</p>
+<p>1.双写绕过</p>
+<p>&lt;scr&lt;script&gt;ript&gt;alert(/xss/)&lt;/script&gt;</p>
+<p>2.大小写混淆绕过</p>
+<p>&lt;ScRipt&gt; alert(/xss/) &lt;/script&gt;</p>
+<p><strong>3. High</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// Is there any input?</span></span><br><span class="line"><span class="keyword">if</span>( array_key_exists( <span class="string">&quot;name&quot;</span>, $_GET ) &amp;&amp; $_GET[ <span class="string">&#x27;name&#x27;</span> ] != <span class="literal">NULL</span> ) &#123;</span><br><span class="line">    <span class="comment">// Get input</span></span><br><span class="line">    $name = preg_replace( <span class="string">&#x27;/&lt;(.*)s(.*)c(.*)r(.*)i(.*)p(.*)t/i&#x27;</span>, <span class="string">&#x27;&#x27;</span>, $_GET[ <span class="string">&#x27;name&#x27;</span> ] );</span><br><span class="line">    <span class="comment">// Feedback for end user</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;&lt;pre&gt;Hello $&#123;name&#125;&lt;/pre&gt;&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>preg_replace 函数执行一个正则表达式的搜索和替换<br>语法：preg_replace (pattern ,replacement ,subject,limit,count )<br>pattern: 正则表达式(字符串或字符串数组)<br>replacement: 用于替换的字符串或字符串数组<br>subject: 要进行搜索和替换的字符串或字符串数组。<br>limit: 可选。每个模式在每个subject上进行替换的最大次数。默认是 -1(无限)。<br>count: 可选。完成的替换次数</p>
+<p>正则表达式解析：<br>. -&gt; 匹配除\n之外的任何单个字符，代替任何字符<br>* -&gt; 匹配其左边的子表达式0次或多次<br>() -&gt; 标记子表达式的开始和结束位置<br>修正符i -&gt; 匹配时忽略大小写</p>
+<p>漏洞利用：</p>
+<p>这样就无法使用&lt;script&gt;标签注入XSS代码了，但是可以通过img, body等标签的事件或者iframe等标签的src注入恶意的js代码</p>
+<p> <strong>&lt;img src=1 onerror=alert(/xss/)&gt;</strong></p>
+<p><strong>4. impossible</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// Is there any input?</span></span><br><span class="line"><span class="keyword">if</span>( array_key_exists( <span class="string">&quot;name&quot;</span>, $_GET ) &amp;&amp; $_GET[ <span class="string">&#x27;name&#x27;</span> ] != <span class="literal">NULL</span> ) &#123;</span><br><span class="line">    <span class="comment">// Check Anti-CSRF token</span></span><br><span class="line">    checkToken( $_REQUEST[ <span class="string">&#x27;user_token&#x27;</span> ], $_SESSION[ <span class="string">&#x27;session_token&#x27;</span> ], <span class="string">&#x27;index.php&#x27;</span> );</span><br><span class="line">    <span class="comment">// Get input</span></span><br><span class="line">    $name = htmlspecialchars( $_GET[ <span class="string">&#x27;name&#x27;</span> ] );</span><br><span class="line">    <span class="comment">// Feedback for end user</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;&lt;pre&gt;Hello $&#123;name&#125;&lt;/pre&gt;&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Generate Anti-CSRF token</span></span><br><span class="line">generateSessionToken();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>impossible级别的代码使用htmlspecialchars函数把预定义的字符&amp;、”、 ’、&lt;、&gt;转换为HTML实体，防止浏览器将其作为HTML元素。</p>
+<h3 id="存储型XSS"><a href="#存储型XSS" class="headerlink" title="存储型XSS"></a>存储型XSS</h3><p><strong>1. low</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>( <span class="keyword">isset</span>( $_POST[ <span class="string">&#x27;btnSign&#x27;</span> ] ) ) &#123;</span><br><span class="line">    <span class="comment">// Get input</span></span><br><span class="line">    $message = trim( $_POST[ <span class="string">&#x27;mtxMessage&#x27;</span> ] );</span><br><span class="line">    $name    = trim( $_POST[ <span class="string">&#x27;txtName&#x27;</span> ] );</span><br><span class="line">    <span class="comment">// Sanitize message input</span></span><br><span class="line">    $message = stripslashes( $message );</span><br><span class="line">    $message = mysql_real_escape_string( $message );</span><br><span class="line">    <span class="comment">// Sanitize name input</span></span><br><span class="line">    $name = mysql_real_escape_string( $name );</span><br><span class="line">    <span class="comment">// Update database</span></span><br><span class="line">    $query  = <span class="string">&quot;INSERT INTO guestbook ( comment, name ) VALUES ( &#x27;<span class="subst">$message</span>&#x27;, &#x27;<span class="subst">$name</span>&#x27; );&quot;</span>;</span><br><span class="line">    $result = mysql_query( $query ) <span class="keyword">or</span> <span class="keyword">die</span>( <span class="string">&#x27;&lt;pre&gt;&#x27;</span> . mysql_error() . <span class="string">&#x27;&lt;/pre&gt;&#x27;</span> );</span><br><span class="line">    <span class="comment">//mysql_close();</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>有关函数介绍:</p>
+<p>__trim(string, charlist)<br>移除字符串两侧的空白字符或其它预定义字符，预定义字符包括\t, \n, \x0b, \r以及空格，可选参数charlist支持添加额外需要删除的字符。</p>
+<p>stripslashes(string)<br>删除字符串中的反斜杠</p>
+<p>mysql_real_escape_string(string, connection)<br>对字符串中的特殊符号 \x00, \n, \r, , ‘, “, \x1a 进行转义__</p>
+<p>“INSERT INTO guestbook ( comment, name ) VALUES ( ‘$message’, ‘$name’);” mysql语句 往guestbook插入数据</p>
+<p>上述代码没有对输入做XSS方面的过滤与检查，并且储存在数据库中，所以存在明显的存储型XSS漏洞</p>
+<p>在Message一栏中输入 &lt;script&gt; alert(‘xss’) &lt;/script&gt; 就可以进行漏洞利用</p>
+<p>wireshark有关知识:<br>kali linux 中<br>eth0 是对外网卡<br>lo 是本地环合网卡?</p>
+<p><img src="data:image/png;base64,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" alt="image"><br>对着这一栏点击右键 选择Dispaly Filter Expression 可以过滤不需要看的协议包<br>之后点击左上角的红色方框停止抓取流量，点击File -&gt; save 保存为pcapng文件</p>
+<p>burp2.1.07 有关知识:<br>Project -&gt; 项目名称 -&gt; 恢复默认值 -&gt; All 可恢复全部默认配置</p>
+<p>设置编码集<br>用户选项 -&gt; 表示 -&gt; 字符集 -&gt; 设置编码集为UTF-8</p>
+<p>项目名称更改<br>Project -&gt; 更改名称</p>
+<p>Repeater 模块<br>选中抓取的包 -&gt; 右键 -&gt; 发送给Repeater -&gt; 点击高亮的Repeater模块 -&gt; 左上角的send按钮 -&gt; 右边会出现时相应内容</p>
+<p>这里对name的输入也有长度限制，可以利用burp suite转包把name 改位&lt;script&gt; alert(‘name’) &lt;/script&gt;</p>
+<p><strong>2. medium</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>( <span class="keyword">isset</span>( $_POST[ <span class="string">&#x27;btnSign&#x27;</span> ] ) ) &#123;</span><br><span class="line">    <span class="comment">// Get input</span></span><br><span class="line">    $message = trim( $_POST[ <span class="string">&#x27;mtxMessage&#x27;</span> ] );</span><br><span class="line">    $name    = trim( $_POST[ <span class="string">&#x27;txtName&#x27;</span> ] );</span><br><span class="line">    <span class="comment">// Sanitize message input</span></span><br><span class="line">    $message = strip_tags( addslashes( $message ) );</span><br><span class="line">    $message = mysql_real_escape_string( $message );</span><br><span class="line">    $message = htmlspecialchars( $message );</span><br><span class="line">    <span class="comment">// Sanitize name input</span></span><br><span class="line">    $name = str_replace( <span class="string">&#x27;&lt;script&gt;&#x27;</span>, <span class="string">&#x27;&#x27;</span>, $name );</span><br><span class="line">    $name = mysql_real_escape_string( $name );</span><br><span class="line">    <span class="comment">// Update database</span></span><br><span class="line">    $query  = <span class="string">&quot;INSERT INTO guestbook ( comment, name ) VALUES ( &#x27;<span class="subst">$message</span>&#x27;, &#x27;<span class="subst">$name</span>&#x27; );&quot;</span>;</span><br><span class="line">    $result = mysql_query( $query ) <span class="keyword">or</span> <span class="keyword">die</span>( <span class="string">&#x27;&lt;pre&gt;&#x27;</span> . mysql_error() . <span class="string">&#x27;&lt;/pre&gt;&#x27;</span> );</span><br><span class="line">    <span class="comment">//mysql_close();</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>相关函数说明:<br>strip_tags() 函数剥去字符串中的HTML、XML以及PHP的标签，但允许使用&lt;b&gt;标签.<br>addslashes() 函数返回在预定义字符(单引号，双引号，反斜杠，NULL) 之前添加反斜杠的字符串</p>
+<p>上述代码对message参数进行了过滤， 无法通过message 注入XSS代码，但是对于name参数可以利用前面的双写绕过与大小写绕过</p>
+<p><strong>3. high</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>( <span class="keyword">isset</span>( $_POST[ <span class="string">&#x27;btnSign&#x27;</span> ] ) ) &#123;</span><br><span class="line">    <span class="comment">// Get input</span></span><br><span class="line">    $message = trim( $_POST[ <span class="string">&#x27;mtxMessage&#x27;</span> ] );</span><br><span class="line">    $name    = trim( $_POST[ <span class="string">&#x27;txtName&#x27;</span> ] );</span><br><span class="line">    <span class="comment">// Sanitize message input</span></span><br><span class="line">    $message = strip_tags( addslashes( $message ) );</span><br><span class="line">    $message = mysql_real_escape_string( $message );</span><br><span class="line">    $message = htmlspecialchars( $message );</span><br><span class="line">    <span class="comment">// Sanitize name input</span></span><br><span class="line">    $name = preg_replace( <span class="string">&#x27;/&lt;(.*)s(.*)c(.*)r(.*)i(.*)p(.*)t/i&#x27;</span>, <span class="string">&#x27;&#x27;</span>, $name );</span><br><span class="line">    $name = mysql_real_escape_string( $name );</span><br><span class="line">    <span class="comment">// Update database</span></span><br><span class="line">    $query  = <span class="string">&quot;INSERT INTO guestbook ( comment, name ) VALUES ( &#x27;<span class="subst">$message</span>&#x27;, &#x27;<span class="subst">$name</span>&#x27; );&quot;</span>;</span><br><span class="line">    $result = mysql_query( $query ) <span class="keyword">or</span> <span class="keyword">die</span>( <span class="string">&#x27;&lt;pre&gt;&#x27;</span> . mysql_error() . <span class="string">&#x27;&lt;/pre&gt;&#x27;</span> );</span><br><span class="line">    <span class="comment">//mysql_close();</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>message 不可利用， 但是name参数可以通过img, ifram等其它危险的标签 注入XSS代码</p>
+<p><strong>4. impossible</strong><br>name 与 message参数 都是使用了htmlspecialchars函数，无法利用XSS，但是如果htmlspecialchars函数使用不当，攻击者就可以通过编码的方式绕过函数进行XSS注入，尤其是DOM型的XSS。（目前未接触）</p>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">Pwcx</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://pwcx.github.io/2020/03/30/DVWA1.10%E5%AD%A6%E4%B9%A0%E4%B9%8BXSS/">https://pwcx.github.io/2020/03/30/DVWA1.10%E5%AD%A6%E4%B9%A0%E4%B9%8BXSS/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/XSS-DVWA/">XSS, DVWA</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/03/31/DVWA1.10%E5%AD%A6%E4%B9%A0%E4%B9%8Bsql%E6%B3%A8%E5%85%A5/"><img class="prev-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">DVWA1.10学习之sql注入</div></div></a></div><div class="next-post pull-right"><a href="/2020/03/17/Hgame-Eggplant-note-write-up/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Hgame Eggplant_note write up</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></article></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Pwcx</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><section id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">Local search</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const initData = {
+      el: '#vcomment',
+      appId: '2n2CU5oNurFhNjN6xYCfQc4z-gzGzoHsz',
+      appKey: 'LSINfAQFg8L1ntymQNQ7MI8d',
+      placeholder: '不说几句话来占领你的地盘吗？o(*￣▽￣*)ブ',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'en',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script src="https://cdn.jsdelivr.net/gh/WhiteCatRyon/js/upjiang.js"></script><script src="/js/calendar.js"></script><script src="/js/languages.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>
